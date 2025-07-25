@@ -27,16 +27,21 @@ defmodule Frac5.Transforms do
   @chunk_limit 100_000
   def points_stream(txform_stream, init_points, parallels) do
     Stream.transform(txform_stream, [init_points], fn txform, pts_stream ->
-      next_stream = Stream.flat_map(pts_stream, fn pts ->
-        {n, _} = Nx.shape(pts)
-        if n >= @chunk_limit do
-          Enum.map(parallels, fn par -> txform.(par.(pts)) end)
-        else
-          ppts = Enum.map(parallels, fn par -> par.(pts) end) |>
-            Nx.concatenate()
-          [txform.(ppts)]
-        end
-      end)
+      next_stream =
+        Stream.flat_map(pts_stream, fn pts ->
+          {n, _} = Nx.shape(pts)
+
+          if n >= @chunk_limit do
+            Enum.map(parallels, fn par -> txform.(par.(pts)) end)
+          else
+            ppts =
+              Enum.map(parallels, fn par -> par.(pts) end)
+              |> Nx.concatenate()
+
+            [txform.(ppts)]
+          end
+        end)
+
       {next_stream, next_stream}
     end)
   end
