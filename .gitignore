@@ -21,3 +21,7 @@ frac5-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Emacs older versions
+*~
+
