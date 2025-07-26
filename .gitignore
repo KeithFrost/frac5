@@ -25,3 +25,6 @@ frac5-*.tar
 # Emacs older versions
 *~
 
+# Generated Image files
+*.ppm.gz
+
