@@ -28,3 +28,6 @@ frac5-*.tar
 # Generated Image files
 *.ppm.gz
 
+# MacOS cruft
+.DS_Store
+
