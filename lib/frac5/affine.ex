@@ -30,7 +30,7 @@ defmodule Frac5.Affine do
   periodically to limit them to the range `[-2*PI, 2*PI]`.
   """
   defn affine_tx(matrix, pts) do
-    Nx.remainder(Nx.dot(pts, matrix) + @pi2, @pi4) - @pi2
+    Nx.remainder(Nx.dot(pts, matrix) + @pi2 + @pi4, @pi4) - @pi2
   end
 
   @doc """

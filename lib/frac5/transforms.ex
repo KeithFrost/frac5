@@ -18,7 +18,7 @@ defmodule Frac5.Transforms do
   """
   defn expand(pts) do
     s2 = Nx.sum(pts * pts, axes: [-1], keep_axes: true)
-    Nx.remainder(pts + Nx.pow(s2, 0.25) + @pi2, @pi4) - @pi2
+    Nx.remainder(pts + Nx.pow(s2, 0.25) + @pi4 + @pi2, @pi4) - @pi2
   end
 
   @doc """

@@ -2,7 +2,9 @@ defmodule Frac5Test do
   use ExUnit.Case
   doctest Frac5
 
-  @tag timeout: 300_000
+  # We allow a ridiculously long time to run this test, because
+  # Nx without an optimized backend is extremely slow.
+  @tag timeout: 600_000
   @tag :tmp_dir
   test "generates a test image", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "test")
