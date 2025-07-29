@@ -25,12 +25,13 @@ defmodule Frac5.Affine do
 
   @pi2 2.0 * :math.acos(-1.0)
   @pi4 2.0 * @pi2
+  @pi10 5.0 * @pi2
   @doc """
   Matrix multiplication, which also wraps its outputs around
   periodically to limit them to the range `[-2*PI, 2*PI]`.
   """
   defn affine_tx(matrix, pts) do
-    Nx.remainder(Nx.dot(pts, matrix) + @pi2 + @pi4, @pi4) - @pi2
+    Nx.remainder(Nx.dot(pts, matrix) + @pi10, @pi4) - @pi2
   end
 
   @doc """
