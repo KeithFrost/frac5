@@ -35,24 +35,19 @@ defmodule Frac5.Affine do
   end
 
   @doc """
-  Takes a `scale` parameter, for which an interesting range
-  is something like `[0.5, 1.0]`, and generates a `5x5` affine transformation
-  matrix, and a function which applies it to an `Nx.Tensor` via
-  `Nx.dot()`, and returns these as fields in an `%Frac5.Affine{}` struct.
+  Takes a `scale` parameter, for which an interesting range is
+  something like `[0.5, 1.0]`, and generates a `5x5` affine
+  transformation matrix, and a function which applies it to an
+  `Nx.Tensor` via `Nx.dot()`, and returns these as fields in an
+  `%Frac5.Affine{}` struct.
   """
   def generate(scale) do
     variance = scale * scale
 
     matrix =
-      for i <- 0..4 do
-        for j <- 0..4 do
-          r = :rand.normal(0.0, variance)
-
-          if i == j do
-            0.5 + r
-          else
-            r
-          end
+      for _i <- 0..4 do
+        for _j <- 0..4 do
+          :rand.normal(0.0, variance)
         end
       end
       |> Nx.tensor()
@@ -92,6 +87,7 @@ defmodule Frac5.Affine do
     init_points =
       Enum.flat_map(affs, fn aff -> Nx.to_list(aff.matrix) end)
       |> Nx.tensor()
+      |> Nx.multiply(1.0 / scale)
 
     txforms = interleave(Enum.map(affs, fn aff -> aff.txform end), txfms)
     stream = Stream.cycle(txforms)
