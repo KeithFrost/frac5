@@ -10,14 +10,15 @@ defmodule Frac5.Transforms do
   """
   import Nx.Defn
 
-  @two_pi 2.0 * :math.acos(-1.0)
+  @pi2 2.0 * :math.acos(-1.0)
+  @pi4 2.0 * @pi2
   @doc """
-  Performs the transformation `x_i -> x_i + (Sum_j x_j*x_j)^0.25`, clipped
-  to the range `[-2*PI, 2*PI]`
+  Performs the transformation `x_i -> x_i + (Sum_j x_j*x_j)^0.25`, with
+  coordinates wrapped around periodically to the range `[-2*PI, 2*PI]`
   """
   defn expand(pts) do
     s2 = Nx.sum(pts * pts, axes: [-1], keep_axes: true)
-    Nx.clip(pts + Nx.pow(s2, 0.25), -@two_pi, @two_pi)
+    Nx.remainder(pts + Nx.pow(s2, 0.25) + @pi2, @pi4) - @pi2
   end
 
   @doc """

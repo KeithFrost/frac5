@@ -23,8 +23,14 @@ defmodule Frac5.Affine do
   import Nx.Defn
   defstruct matrix: nil, txform: nil
 
+  @pi2 2.0 * :math.acos(-1.0)
+  @pi4 2.0 * @pi2
+  @doc """
+  Matrix multiplication, which also wraps its outputs around
+  periodically to limit them to the range `[-2*PI, 2*PI]`.
+  """
   defn affine_tx(matrix, pts) do
-    Nx.dot(pts, matrix)
+    Nx.remainder(Nx.dot(pts, matrix) + @pi2, @pi4) - @pi2
   end
 
   @doc """

@@ -5,11 +5,12 @@ defmodule Frac5.Pixels do
   grid of pixels which can be written to an image file.  Currently,
   the image file resolution is fixed to `2048 * 2048` pixels, and the
   scaling from the point space to the image frame is set such that the
-  image ranges from `-6` to `6` in both `x` and `y` dimensions.  This
-  module also provides the utility function `rand_unit_vec()` for
-  generating a randomly oriented unit vector, useful for picking a
-  random `zcolor` direction, which will be projected out of the color
-  space in order to limit the palette of the generated image.
+  image ranges from `-2 * PI` to `2 * PI` in both `x` and `y`
+  dimensions.  This module also provides the utility function
+  `rand_unit_vec()` for generating a randomly oriented unit vector,
+  useful for picking a random `zcolor` direction, which will be
+  projected out of the color space in order to limit the palette of
+  the generated image.
   """
 
   import Nx.Defn
@@ -31,6 +32,8 @@ defmodule Frac5.Pixels do
     |> Nx.tensor()
   end
 
+  @pi2 2.0 * :math.acos(-1.0)
+  @pi4 2.0 * @pi2
   @resolution 2048
   @doc """
   When passed an `Nx` tensor of 5-d points, a pair of tensors
@@ -49,7 +52,7 @@ defmodule Frac5.Pixels do
     dots = Nx.dot(rgbs, zcolor)
     rgbs = rgbs - Nx.outer(dots, zcolor)
     xys = pts[[.., 0..1]]
-    indices = Nx.as_type(Nx.floor(dim * (xys + 6.0) / 12.0), :s16)
+    indices = Nx.as_type(Nx.floor(dim * (xys + @pi2) / @pi4), :s16)
     indices = Nx.clip(indices, 0, dim - 1)
     grid = Nx.indexed_add(grid, indices, rgbs)
     count = Nx.indexed_add(count, indices, Nx.broadcast(1, {npts, 1}))
