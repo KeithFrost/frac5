@@ -39,18 +39,9 @@ defmodule Frac5 do
   """
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Frac5.hello()
-      :world
-
+  Writes a sample image at a `path` chosen by the caller, using
+  randomly generated matrices and a random `zcolor` vector.
   """
-  def hello do
-    :world
-  end
-
   def example_image(path, batches \\ 100) do
     scale = 0.5 + 0.3 * :rand.uniform()
     IO.inspect(scale)
