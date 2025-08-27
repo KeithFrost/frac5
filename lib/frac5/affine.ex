@@ -9,17 +9,13 @@ defmodule Frac5.Affine do
   affine transformations given a `scale` parameter, using the Erlang
   `:rand.normal()` PRNG.
 
-  The main usage of this module in generating `Frac5` fractals is expected
-  to be the `generate_stream_init()` function, which creates a specified
-  number of random affine transformations from a specified scale parameter,
-  and then initializes an Elixir lazy Stream which cycles through the
-  functions applying those transformations, while interleaving them with
-  optional other transformations supplied to the function. This stream
-  is returned in a tuple, containing also an initial set of points for
-  seeding the fractal generation process, taken from the affine transform
-  matrices.
-
+  The main usage of this module in generating `Frac5` fractals is
+  expected to be the `generate_seq_txforms()` function, which creates
+  a specified number of random affine transformations from a specified
+  scale parameter, and then interleaves them with optional other
+  transformations supplied to the function.
   """
+
   import Nx.Defn
   defstruct matrix: nil, txform: nil
 
@@ -75,22 +71,12 @@ defmodule Frac5.Affine do
   end
 
   @doc """
-  Generates an infinite `Stream` of affine transformations, generated as a cycle
-  of `n` random transformations with `scale` parameter supplied to `generate`,
-  optionally interleaved with a list of other transformations supplied as input.
-  Returns a tuple consisting of the infinite stream, and an `Nx.Tensor` of
-  initial points which can be used to seed a fractal.
+  Generates a sequence of `n` random transformations with `scale`
+  parameter supplied to `generate`, optionally interleaved with a list
+  of other transformations supplied as input.
   """
-  def generate_stream_init(n, scale, txfms \\ []) do
-    affs = Enum.map(1..n, fn _i -> generate(scale) end)
-
-    init_points =
-      Enum.flat_map(affs, fn aff -> Nx.to_list(aff.matrix) end)
-      |> Nx.tensor()
-      |> Nx.multiply(1.0 / scale)
-
-    txforms = interleave(Enum.map(affs, fn aff -> aff.txform end), txfms)
-    stream = Stream.cycle(txforms)
-    {stream, init_points}
+  def generate_seq_txforms(n, scale, txfms \\ []) do
+    Enum.map(1..n, fn _i -> generate(scale).txform end)
+    |> interleave(txfms)
   end
 end

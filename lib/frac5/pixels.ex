@@ -1,29 +1,36 @@
 defmodule Frac5.Pixels do
   @moduledoc """
   `Frac5.Pixels` defines the function `pixelate()` for converting a
-  stream of 5-dimensional points in `(x, y, r, g, b)` space into a
-  grid of pixels which can be written to an image file.  Currently,
-  the image file resolution is fixed to `2048 * 2048` pixels, and the
-  scaling from the point space to the image frame is set such that the
-  image ranges from `-2 * PI` to `2 * PI` in both `x` and `y`
-  dimensions.  This module also provides the utility function
-  `rand_unit_vec()` for generating a randomly oriented unit vector,
-  useful for picking a random `zcolor` direction, which will be
-  projected out of the color space in order to limit the palette of
-  the generated image.
+  stream of 5D points from a `Frac5.State` object into a grid of
+  pixels which can be written to an image file.  Currently, the image
+  file resolution is fixed to `2048 * 2048` pixels, and the scaling
+  from the point space to the image frame is set such that the image
+  ranges from `-2 * PI` to `2 * PI` in both `x` and `y` dimensions.
+  This module also provides the utility function `rand_unit_vec()` for
+  generating a randomly oriented unit vector, useful for picking a
+  random `zcolor` direction, which will be projected out of the color
+  space in order to limit the palette of the generated image.
+  N.B. The unit vector is not truly random in orientation space;
+  because the directions are chosen from the unit cube rather than a
+  unit sphere, it favors picking directions biased towards the corners
+  of the unit cube, which is helpful for making "nice" color schemes.
   """
 
   import Nx.Defn
 
   @doc """
   Generates a random vector in n-dimensional space, by generating
-  independent normally distributed components in each dimension, and
+  independent uniformly distributed components in each dimension, and
   then dividing each component by the norm of the resulting vector.
+  N.B. this does *not* pick an orientation randomly from the surface
+  of the unit sphere, but rather, from the volume of the unit cube, so
+  it is biased in favor of directions pointing toward the corners of
+  the cube.
   """
   def rand_unit_vec(dim) do
     l =
       for _i <- 1..dim do
-        :rand.normal(0.0, 1.0)
+        :rand.uniform() - 0.5
       end
 
     norm = :math.sqrt(Enum.reduce(l, 0, fn v, sum -> sum + v * v end))
@@ -71,25 +78,35 @@ defmodule Frac5.Pixels do
   end
 
   @doc """
-  Accepts a stream of `points`, a `zcolor (r, g, b)` vector, and a number
-  of `batches`.  Limits the stream to the first `batches` tensors of
-  points, accumulates points into `{grid, count}` tensors using the
+  Accepts a `Frac5.State` object and a `zcolor (r, g, b)`
+  vector. Generates a stream pf points from the `Frac5.State` object
+  and accumulates them into `{grid, count}` tensors using the
   `pixel_reducer` function, and then converts the resulting pair of
   tensors into a color image tensor using the `color_bytes` function.
   """
-  def pixelate(points, zcolor, batches) do
+  def pixelate(state = %Frac5.State{}, zcolor) do
     dim = @resolution
     grid0 = Nx.broadcast(0.0, {dim, dim, 3})
-    count0 = Nx.broadcast(0, {dim, dim, 1})
+    count0 = Nx.broadcast(9, {dim, dim, 1})
 
     {grid, count} =
-      Stream.take(points, batches)
-      |> Enum.reduce({grid0, count0}, fn pts, {grid, count} ->
-        pixel_reducer(pts, {grid, count}, zcolor)
-      end)
+      Enum.reduce_while(
+        Stream.cycle([nil]),
+        {state, grid0, count0},
+        fn _nil, {state, grid, count} ->
+          case Frac5.State.next(state) do
+            {pts, state} ->
+              {grid, count} = pixel_reducer(pts, {grid, count}, zcolor)
+              {:cont, {state, grid, count}}
 
-    IO.inspect(Nx.to_number(Nx.sum(count)))
-    count = Nx.clip(count, 1, 2_000_000 * batches)
+            nil ->
+              {:halt, {grid, count}}
+          end
+        end
+      )
+
+    IO.inspect(Nx.to_number(Nx.sum(count)) - 9 * dim * dim)
+    count = Nx.clip(count, 1, 2_000_000_000)
     color_bytes(grid, count)
   end
 end
