@@ -8,6 +8,6 @@ defmodule Frac5Test do
   @tag :tmp_dir
   test "generates a test image", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "test")
-    assert Frac5.example_image(path, 12) == path <> ".ppm.gz"
+    assert Frac5.example_image(path) == path <> ".ppm.gz"
   end
 end
