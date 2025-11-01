@@ -2,10 +2,9 @@ defmodule Frac5.State do
   defstruct([:pts0, :seq_ring, :parallels, :stack, :max_depth, :depth])
 
   @batch_limit 50_000
-  def new(seq_txforms, parallels, size_limit \\ 3.0e8) do
+  def new(pts0, seq_txforms, parallels, size_limit \\ 3.0e8) do
     ring0 = Frac5.Ring.new(seq_txforms)
     ilayers = floor(:math.log(@batch_limit) / :math.log(length(parallels)))
-    pts0 = Nx.eye(5, type: :f32)
 
     {pts0, seq_ring} =
       Enum.reduce(1..ilayers, {pts0, ring0}, fn _l, {p, r} ->

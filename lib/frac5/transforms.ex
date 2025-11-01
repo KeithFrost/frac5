@@ -40,6 +40,13 @@ defmodule Frac5.Transforms do
   end
 
   @doc """
+  Initial seed points to feed to Frac5.State.new()
+  """
+  def init_points() do
+    Nx.eye(5, type: :f32)
+  end
+
+  @doc """
   The default parallel transforms are `expand`, `contract`, and `Nx.cos`.
   """
   def default_parallels() do

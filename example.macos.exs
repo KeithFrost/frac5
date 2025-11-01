@@ -7,4 +7,4 @@ Mix.install([
 
 Nx.default_backend({EMLX.Backend, device: :gpu})
 
-Frac5.example_image("example", 500)
+Frac5.example_image("example", 1.0e8)

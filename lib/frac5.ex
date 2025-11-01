@@ -54,11 +54,13 @@ defmodule Frac5 do
 
     grid =
       Frac5.State.new(
+	Frac5.Transforms.init_points(),
         affine_seq,
         Frac5.Transforms.default_parallels(),
         max_points
       )
       |> IO.inspect()
+      |> Frac5.State.points_stream()
       |> Frac5.Pixels.pixelate(zcolor)
 
     Frac5.Pnm.render_gz!(grid, path) |> IO.inspect()
