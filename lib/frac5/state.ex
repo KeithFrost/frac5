@@ -65,7 +65,7 @@ defmodule Frac5.State do
            stack: [{pp, tl(state.parallels)} | state.stack]
        }}
     else
-      state = pop_finished(state)
+      %Frac5.State{} = state = pop_finished(state)
       # We've generated all points to max_depth
       if state.depth == 0 do
         nil
